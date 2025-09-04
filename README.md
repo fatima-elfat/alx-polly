@@ -59,6 +59,51 @@ A good security audit involves both static code analysis and dynamic testing. He
 
 ---
 
+## 🔒 Security Audit & Fixes Implemented
+
+During a thorough security audit, several vulnerabilities and semantic bugs were identified and subsequently addressed to enhance the application's robustness and security posture.
+
+### 1. Insufficient Authorization Checks (Admin Page)
+
+*   **Location**: `app/(dashboard)/admin/page.tsx`
+*   **Description**: The admin page lacked proper role-based access control, allowing any authenticated user to access administrative functionalities.
+*   **Impact**: Regular users could gain unauthorized administrative access and perform actions beyond their intended permissions.
+*   **Fix Applied**: Implemented robust role-based access control. The `app/(dashboard)/admin/page.tsx` was refactored into a Server Component to perform server-side authorization checks. Only users with an explicit 'admin' role (stored in `user.user_metadata`) can now access the admin dashboard; others are redirected.
+
+### 2. Inadequate Input Validation (Various Form Submission Handlers)
+
+*   **Location**: `app/lib/actions/poll-actions.ts`, `app/lib/actions/auth-actions.ts`, `app/(auth)/register/page.tsx`
+*   **Description**: Input validation was not consistently applied across all user-facing forms and Server Actions, creating potential avenues for malicious input.
+*   **Impact**: Increased risk of Cross-Site Scripting (XSS) and injection attacks through unvalidated or improperly sanitized user input.
+*   **Fix Applied**: Enhanced input validation significantly using `zod` schemas. This was applied to:
+    *   **Poll Creation/Update**: `createPoll` and `updatePoll` Server Actions now validate the `question` and `options` for content and structure.
+    *   **User Registration**: The `register` Server Action and the client-side `RegisterPage` now enforce strong password complexity requirements (minimum length, mixed character types) using a `zod` schema.
+    *   **Vote Submission**: `submitVote` now validates the `optionIndex` against the poll's actual options and prevents multiple votes from a single authenticated user on the same poll.
+
+### 3. Authorization Bypasses in Poll Management
+
+*   **Location**: `app/lib/actions/poll-actions.ts`
+*   **Description**: Several poll-related actions lacked proper authorization checks, leading to data exposure and unauthorized modifications.
+*   **Impact**:
+    *   **Data Exposure**: Any user could view any poll by ID, regardless of ownership or public status.
+    *   **Unauthorized Deletion**: Any authenticated user could delete any poll by ID.
+    *   **Inconsistent Voting**: Users could submit votes for non-existent options or vote multiple times in the same poll.
+*   **Fix Applied**: Implemented granular authorization and semantic validation for poll operations:
+    *   **`getPollById`**: Modified to only allow access to public polls for unauthenticated users, and to both public and owned polls for authenticated users.
+    *   **`submitVote`**: Enhanced to fetch the target poll, validate the `optionIndex` against available options, and prevent authenticated users from casting multiple votes on the same poll.
+    *   **`deletePoll`**: Implemented an authorization check to ensure that only the owner of a poll can successfully delete it.
+
+### 4. Weak Password Requirements
+
+*   **Location**: `app/lib/actions/auth-actions.ts`, `app/(auth)/register/page.tsx`, `app/lib/types/index.ts`
+*   **Description**: The application previously had no strict password complexity rules, making user accounts vulnerable to brute-force and dictionary attacks.
+*   **Impact**: Increased risk of account compromise due to easily guessable passwords.
+*   **Fix Applied**: Introduced a `zod` schema (`passwordSchema`) to enforce strong password policies during user registration, requiring a minimum length and a mix of uppercase, lowercase, numeric, and special characters. Client-side validation was also added to provide immediate feedback. Brute-force protection for login attempts is inherently handled by Supabase's authentication service.
+
+These fixes collectively enhance the security and integrity of the ALX Polly application, ensuring a safer and more reliable experience for users.
+
+---
+
 ## Getting Started
 
 To begin your security audit, you'll need to get the application running on your local machine.
