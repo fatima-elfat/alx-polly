@@ -114,7 +114,25 @@ To begin your security audit, you'll need to get the application running on your
 -   [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
 -   A [Supabase](https://supabase.io/) account (the project is pre-configured, but you may need your own for a clean slate).
 
-### 2. Installation
+### 2. Supabase Configuration
+
+1.  **Create a New Project**: Go to your Supabase Dashboard and create a new project.
+2.  **Database Schema**: Set up your database tables. The application expects at least `profiles`, `polls`, and `votes` tables. You can find example schemas in the Supabase documentation or define them as follows:
+    *   `profiles`: Stores user information (linked to Supabase Auth `users` table via `id`).
+    *   `polls`: Stores poll questions and options, linked to `profiles` via `user_id`.
+    *   `votes`: Stores individual votes, linked to `polls` via `poll_id` and `profiles` via `user_id` (nullable for anonymous votes).
+3.  **API Keys**: Navigate to your project settings in Supabase, then "API". You will need your `Project URL` and `anon public` key.
+
+### 3. Environment Variables
+
+Create a file named `.env.local` in the root of your project and add the following:
+
+NEXT_PUBLIC_SUPABASE_URL=YOUR_SUPABASE_PROJECT_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+
+Replace `YOUR_SUPABASE_PROJECT_URL` and `YOUR_SUPABASE_ANON_KEY` with the values obtained from your Supabase project settings.
+
+### 4. Installation
 
 Clone the repository and install the dependencies:
 
@@ -124,11 +142,7 @@ cd alx-polly
 npm install
 ```
 
-### 3. Environment Variables
-
-The project uses Supabase for its backend. An environment file `.env.local` is needed.Use the keys you created during the Supabase setup process.
-
-### 4. Running the Development Server
+### 5. Running the Development Server
 
 Start the application in development mode:
 
@@ -137,5 +151,27 @@ npm run dev
 ```
 
 The application will be available at `http://localhost:3000`.
+
+### 6. Running Tests (if applicable)
+
+If there are any tests defined, you can run them using:
+
+```bash
+npm test
+```
+*(Note: As of now, specific test commands are not provided, this is a placeholder.)*
+
+---
+
+## Usage Examples
+
+Once the application is running and you have configured Supabase:
+
+1.  **Register a new user**: Navigate to `/register` and create an account.
+2.  **Log in**: Use your new credentials to log in.
+3.  **Create a Poll**: Go to `/create` to create a new poll by entering a question and at least two options.
+4.  **View Your Polls**: Visit `/polls` to see a list of polls you have created.
+5.  **Vote on a Poll**: Click on a poll to view its details and cast your vote. You can also share the poll link for others to vote.
+6.  **Edit/Delete a Poll**: From your dashboard, you can edit or delete polls you own.
 
 Good luck, engineer! This is your chance to step into the shoes of a security professional and make a real impact on the quality and safety of this application. Happy hunting!
